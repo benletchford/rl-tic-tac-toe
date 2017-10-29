@@ -63,10 +63,20 @@ class TicTacToe:
 
         # Sanity check
         assert x < self.get_board_size() and y < self.get_board_size()
-        assert self.board_state[x][y] == 0
+        assert self.board_state[y][x] == 0
         assert self.is_finished() == 0
 
         new_state = self.board_state.copy()
         new_state[y][x] = self.get_turn()
 
         return self.set_state(new_state)
+
+    @staticmethod
+    def translate_position_to_xy(position, board_size=3):
+        """ Takes a single number and maps it to x, y coordinates.
+            Example: 8 = 2, 2 for a board_size of 3 """
+
+        x = position % board_size
+        y = position / board_size
+
+        return x, y

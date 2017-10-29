@@ -233,3 +233,17 @@ def test_is_finished(params):
 
     tic_tac_toe.set_state(params['board_state'])
     assert tic_tac_toe.is_finished() == params['is_finished']
+
+
+@pytest.mark.parametrize('params', [
+    {'position': 8, 'xy': (2, 2)},
+    {'position': 0, 'xy': (0, 0)},
+    {'position': 1, 'xy': (1, 0)},
+    {'position': 2, 'xy': (2, 0)},
+    {'position': 3, 'xy': (0, 1)},
+    {'position': 4, 'xy': (1, 1)}
+])
+def test_position_translation(params):
+    tic_tac_toe = TicTacToe()
+
+    assert TicTacToe.translate_position_to_xy(params['position']) == params['xy']
