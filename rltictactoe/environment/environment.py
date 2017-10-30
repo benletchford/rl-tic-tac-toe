@@ -6,11 +6,12 @@ from gym.spaces import Discrete, Box
 from rltictactoe import TicTacToe
 
 
-class TicTacToeEnv(gym.Env):
+class TicTacToeEnv:
     action_space = Discrete(3**2)
 
-    def __init__(self, board_size=3):
+    def __init__(self, board_size=3, predict_for=None):
         self.board_size = board_size
+        self.predict_for = predict_for
 
         self.observation_space = Box(
             low=np.array([0 for cell in range(self.board_size ** 2)]),
@@ -18,6 +19,11 @@ class TicTacToeEnv(gym.Env):
         )
 
     def reset(self):
+        if self.predict_for != None:
+            self.tictactoe = TicTacToe()
+            self.tictactoe.set_state(self.predict_for)
+            return self.tictactoe.board_state.flatten()
+
         self.tictactoe = TicTacToe()
         self.tictactoe.set_state([
             [0, 0, 0],
@@ -31,6 +37,9 @@ class TicTacToeEnv(gym.Env):
         return self.tictactoe.board_state.flatten()
 
     def step(self, action):
+        if self.predict_for != None:
+            return self.tictactoe.board_state.flatten(), 0, True, {}
+
         translated_action = TicTacToe.translate_position_to_xy(action)
 
         try:

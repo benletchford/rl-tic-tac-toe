@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
+import sys
+import os
+import json
+
 from flask import Flask, request
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from rltictactoe import dqn, TicTacToe
 
 
 app = Flask(__name__)
@@ -25,50 +32,57 @@ def root():
             width: 100%;
         }
         body {
-            background-color: #607D8B;
+            background-color: #00BDAB;
         }
         #container {
             width: 100vh;
             height: 100vh;
             margin: 0 auto;
-            border-left: 1px solid black;
-            border-right: 1px solid black;
         }
         #board {
             position: relative;
             width: 100%;
             height:100%;
-            background-color: #2196F3;
         }
         .rule {
             position: absolute;
-            background-color: black;
+            background-color: #00A191;
         }
         .rule.vrule {
-            width: 1px;
+            width: 6px;
             height: 100%;
         }
         .rule.hrule {
             width: 100%;
-            height: 1px;
+            height: 6px;
         }
         .rule.vrule#vrule-1 {
-            left: 33.33%;
+            left: calc(33.33% - 3px);
         }
         .rule.vrule#vrule-2 {
-            left: 66.66%;
+            left: calc(66.66% - 3px);
         }
         .rule.hrule#hrule-1 {
-            top: 33.33%;
+            top: calc(33.33% - 3px);
         }
         .rule.hrule#hrule-2 {
-            top: 66.66%;
+            top: calc(66.66% - 3px);
         }
     </style>
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script type="text/javascript">
-      $(function() {});
+      $(function() {
+        var BOARD_SIZE = 3;
+        var $board = $("#board");
+
+        $("#board").click(function(e) {
+            var x = e.offsetX / ($board.width() / BOARD_SIZE) | 0;
+            var y = e.offsetY / ($board.width() / BOARD_SIZE) | 0;
+            console.log(x);
+            console.log(y);
+        });
+      });
     </script>
   </head>
 
@@ -84,6 +98,26 @@ def root():
   </body>
 </html>
 """
+
+
+@app.route('/api/predict', methods=['POST'])
+def predict():
+    board_state = content = request.get_json(silent=True)
+
+    move = dqn.predict(
+        board_state=board_state,
+        model_path='saved-weights/-0.1419.h5f'
+    )
+
+    translated_move = TicTacToe.translate_position_to_xy(move)
+
+    tictactoe = TicTacToe()
+    tictactoe.set_state(board_state)
+    tictactoe.make_move(x=translated_move[0], y=translated_move[1])
+
+    return json.dumps(
+        tictactoe.board_state.tolist()
+    )
 
 
 if __name__ == "__main__":
